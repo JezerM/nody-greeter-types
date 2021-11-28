@@ -1,0 +1,18 @@
+{
+  "name": "nody-greeter-types",
+  "version": "1.0.1",
+  "description": "Nody-Greeter/Web-Greeter typescript types",
+  "types":"index.d.ts",
+  "keywords": [
+    "nody-greeter",
+    "web-greeter",
+    "typescript",
+    "lightdm"
+  ],
+  "author": "JezerM",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JezerM/nody-greeter-types"
+  }
+}
