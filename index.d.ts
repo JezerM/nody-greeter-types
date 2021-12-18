@@ -1,5 +1,5 @@
 import { LightDMBattery, LightDMLanguage, LightDMLayout, LightDMSession, LightDMUser } from "./ldm_interfaces";
-declare class Signal {
+export declare class Signal {
     _name: string;
     _callbacks: Function[];
     constructor(name: string);
@@ -15,7 +15,7 @@ declare class Signal {
     disconnect(callback: Function): void;
     _emit(...args: [...any]): void;
 }
-declare class Greeter {
+export declare class Greeter {
     constructor();
     authentication_complete: Signal;
     autologin_timer_expired: Signal;
@@ -182,10 +182,10 @@ declare class Greeter {
     get select_guest_hint(): boolean;
     /**
      * The username to select by default.
-     * @type {string}
+     * @type {string|undefined}
      * @readonly
      */
-    get select_user_hint(): boolean;
+    get select_user_hint(): string | undefined;
     /**
      * List of available sessions.
      * @type {LightDMSession[]}
@@ -287,21 +287,77 @@ declare class Greeter {
     suspend(): boolean;
 }
 interface gc_branding {
+    /**
+     * Path to directory that contains background images
+     */
     background_images_dir: string;
+    /**
+     * Path to distro logo image for use in greeter themes
+     */
     logo: string;
+    /**
+     * Default user image/avatar.
+     */
     user_image: string;
 }
-declare class GreeterConfig {
+interface gc_greeter {
+    /**
+     * Greeter theme debug mode
+     */
+    debug_mode: boolean;
+    /**
+     * Provide an option to load a fallback theme when theme errors are detected
+     */
+    detect_theme_errors: boolean;
+    /**
+     * Blank the screen after this many seconds of inactivity
+     */
+    screensaver_timeout: number;
+    /**
+     * Don't allow themes to make remote http requests
+     */
+    secure_mode: boolean;
+    /**
+     * Language to use when displaying the time or "" to use the system's language
+     */
+    time_language: string;
+    /**
+     * The name of the theme to be used by the greeter
+     */
+    theme: string;
+}
+interface gc_features {
+    /**
+     * Enable greeter and themes to get battery status
+     */
+    battery: boolean;
+    /**
+     * Backlight options
+     */
+    backlight: {
+        /**
+         * Enable greeter and themes to control display backlight
+         */
+        enabled: boolean;
+        /**
+         * The amount to increase/decrease brightness by greeter
+         */
+        value: number;
+        /**
+         * How many steps are needed to do the change
+         */
+        steps: number;
+    };
+}
+export declare class GreeterConfig {
     constructor();
     /**
      * Holds keys/values from the `branding` section of the config file.
      *
      * @type {object} branding
-     * @property {string} background_images_dir Path to directory that contains background images
-     *                                      for use in greeter themes.
-     * @property {string} logo                  Path to distro logo image for use in greeter themes.
-     * @property {string} user_image            Default user image/avatar. This is used by greeter themes
-     *                                      for users that have not configured a `.face` image.
+     * @property {string} background_images_dir Path to directory that contains background images for use in greeter themes.
+     * @property {string} logo Path to distro logo image for use in greeter themes.
+     * @property {string} user_image Default user image/avatar. This is used by greeter themes for users that have not configured a `.face` image.
      * @readonly
      */
     get branding(): gc_branding;
@@ -309,33 +365,30 @@ declare class GreeterConfig {
      * Holds keys/values from the `greeter` section of the config file.
      *
      * @type {object}  greeter
-     * @property {boolean} debug_mode          Greeter theme debug mode.
-     * @property {boolean} detect_theme_errors Provide an option to load a fallback theme when theme
-     *                                     errors are detected.
+     * @property {boolean} debug_mode Greeter theme debug mode.
+     * @property {boolean} detect_theme_errors Provide an option to load a fallback theme when theme errors are detected.
      * @property {number}  screensaver_timeout Blank the screen after this many seconds of inactivity.
-     * @property {boolean} secure_mode         Don't allow themes to make remote http requests.
-     *                                     generate localized time for display.
-     * @property {string}  time_language       Language to use when displaying the time or ""
-     *                                     to use the system's language.
-     * @property {string}  theme               The name of the theme to be used by the greeter.
+     * @property {boolean} secure_mode Don't allow themes to make remote http requests.
+     * @property {string}  time_language Language to use when displaying the time or "" to use the system's language.
+     * @property {string}  theme The name of the theme to be used by the greeter.
      * @readonly
      */
-    get greeter(): any;
+    get greeter(): gc_greeter;
     /**
      * Holds keys/values from the `features` section of the config file.
      *
      * @type {Object}      features
-     * @property {boolean} battery				 Enable greeter and themes to ger battery status.
+     * @property {boolean} battery Enable greeter and themes to get battery status.
      * @property {Object}  backlight
-     * @property {boolean} enabled				 Enable greeter and themes to control display backlight.
-     * @property {number}  value					 The amount to increase/decrease brightness by greeter.
-     * @property {number}  steps					 How many steps are needed to do the change.
+     * @property {boolean} backlight.enabled Enable greeter and themes to control display backlight.
+     * @property {number}  backlight.value The amount to increase/decrease brightness by greeter.
+     * @property {number}  backlight.steps How many steps are needed to do the change.
      * @readonly
      */
-    get features(): any;
-    get layouts(): any;
+    get features(): gc_features;
+    get layouts(): LightDMLayout[];
 }
-declare class ThemeUtils {
+export declare class ThemeUtils {
     constructor();
     /**
      * Binds `this` to class, `context`, for all of the class's methods.
@@ -357,7 +410,7 @@ declare class ThemeUtils {
      * @param {boolean}             only_images Include only images in the results. Default `true`.
      * @param {function(string[])}  callback    Callback function to be called with the result.
      */
-    dirlist(path: string, only_images: boolean, callback: (args: string[]) => any): any;
+    dirlist(path: string, only_images: boolean, callback: (args: string[]) => void): void;
     /**
      * Returns the contents of directory found at `path` provided that the (normalized) `path`
      * meets at least one of the following conditions:
@@ -387,4 +440,12 @@ export declare const lightdm: Greeter;
 export declare const greeter_config: GreeterConfig;
 export declare const theme_utils: ThemeUtils;
 export declare const _ready_event: Event;
+declare global {
+    interface Window {
+        lightdm: Greeter | undefined;
+        greeter_config: GreeterConfig | undefined;
+        theme_utils: ThemeUtils | undefined;
+        _ready_event: Event | undefined;
+    }
+}
 export {};
