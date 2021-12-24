@@ -448,4 +448,6 @@ declare global {
         _ready_event: Event | undefined;
     }
 }
-export {};
+export {
+  LightDMUser, LightDMLayout, LightDMBattery, LightDMSession, LightDMLanguage
+};
