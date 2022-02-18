@@ -1,19 +1,89 @@
 import { LightDMBattery, LightDMLanguage, LightDMLayout, LightDMSession, LightDMUser } from "./ldm_interfaces";
+/**
+ * Metadata that is sent to each window to handle more interesting multi-monitor
+ * functionality / themes.
+ */
+export interface WindowMetadata {
+    id: number;
+    is_primary: boolean;
+    position: {
+        x: number;
+        y: number;
+    };
+    size: {
+        width: number;
+        height: number;
+    };
+    /**
+     * The total real-estate across all screens,
+     * this can be used to assist in, for example,
+     * correctly positioning multi-monitor backgrounds.
+     */
+    overallBoundary: {
+        minX: number;
+        maxX: number;
+        minY: number;
+        maxY: number;
+    };
+}
+/**
+ * An event that is fired and dispatched when one browser window of a theme
+ * sends a broadcast to all windows (which happens for multi-monitor setups)
+ */
+export declare class NodyBroadcastEvent extends Event {
+    /** Metadata for the window that originated the request */
+    readonly window: WindowMetadata;
+    /** Data sent in the broadcast */
+    readonly data: unknown;
+    constructor(
+    /** Metadata for the window that originated the request */
+    window: WindowMetadata, 
+    /** Data sent in the broadcast */
+    data: unknown);
+}
+/**
+ * A class that exposes functionality that is unique to `nody-greeter` and not
+ * present in `web-greeter`
+ */
+export declare class Nody {
+    private _window_metadata;
+    /**
+     * callback that should be called when the metadata is received
+     */
+    private _ready;
+    private readonly _ready_promise;
+    constructor();
+    get window_metadata(): WindowMetadata;
+    /** Resolves when we have received WindowMetadata */
+    whenReady: () => Promise<void>;
+    /**
+     * Send a message to all windows currently open for the greeter.
+     *
+     * This is primarily for themes that are runing in multi-monitor environments
+     */
+    broadcast(data: unknown): void;
+}
 export declare class Signal {
     _name: string;
-    _callbacks: Function[];
+    private _callbacks;
     constructor(name: string);
     /**
      * Connects a callback to the signal.
-     * @param {Function} callback The callback to attach.
+     * @param {() => void} callback The callback to attach.
      */
-    connect(callback: Function): void;
+    connect(callback: (...args: any[]) => void): void;
     /**
      * Disconnects a callback to the signal.
-     * @param {Function} callback The callback to disattach.
+     * @param {() => void} callback The callback to disattach.
      */
-    disconnect(callback: Function): void;
-    _emit(...args: [...any]): void;
+    disconnect(callback: () => void): void;
+    _emit(...args: unknown[]): void;
+}
+export declare class MessageSignal extends Signal {
+    connect(callback: (message: string, type: number) => void): void;
+}
+export declare class PromptSignal extends Signal {
+    connect(callback: (message: string, type: number) => void): void;
 }
 export declare class Greeter {
     constructor();
@@ -21,8 +91,8 @@ export declare class Greeter {
     autologin_timer_expired: Signal;
     idle: Signal;
     reset: Signal;
-    show_message: Signal;
-    show_prompt: Signal;
+    show_message: MessageSignal;
+    show_prompt: PromptSignal;
     brightness_update: Signal;
     battery_update: Signal;
     /**
@@ -219,34 +289,52 @@ export declare class Greeter {
      *
      * @param {string|null} username A username or "null" to prompt for a username.
      */
-    authenticate(username: string | null): any;
+    authenticate(username: string | null): boolean;
     /**
      * Starts the authentication procedure for the guest user.
      */
-    authenticate_as_guest(): any;
+    authenticate_as_guest(): boolean;
+    /**
+     * Set the brightness to quantity
+     * @param {number} quantity The quantity to set
+     * @deprecated Use `brightness_set`
+     */
+    brightnessSet(quantity: number): void;
     /**
      * Set the brightness to quantity
      * @param {number} quantity The quantity to set
      */
-    brightnessSet(quantity: number): any;
+    brightness_set(quantity: number): void;
+    /**
+     * Increase the brightness by quantity
+     * @param {number} quantity The quantity to increase
+     * @deprecated Use `brightness_increase`
+     */
+    brightnessIncrease(quantity: number): void;
     /**
      * Increase the brightness by quantity
      * @param {number} quantity The quantity to increase
      */
-    brightnessIncrease(quantity: number): any;
+    brightness_increase(quantity: number): void;
+    /**
+     * Decrease the brightness by quantity
+     * @param {number} quantity The quantity to decrease
+     * @deprecated Use `brightness_decrease`
+     */
+    brightnessDecrease(quantity: number): void;
     /**
      * Decrease the brightness by quantity
      * @param {number} quantity The quantity to decrease
      */
-    brightnessDecrease(quantity: number): any;
+    brightness_decrease(quantity: number): void;
     /**
      * Cancel user authentication that is currently in progress.
      */
-    cancel_authentication(): any;
+    cancel_authentication(): boolean;
     /**
      * Cancel the automatic login.
      */
-    cancel_autologin(): any;
+    cancel_autologin(): boolean;
     /**
      * Triggers the system to hibernate.
      * @returns {boolean} "true" if hibernation initiated, otherwise "false"
@@ -256,7 +344,7 @@ export declare class Greeter {
      * Provide a response to a prompt.
      * @param {string} response
      */
-    respond(response: string): any;
+    respond(response: string): boolean;
     /**
      * Triggers the system to restart.
      * @returns {boolean} "true" if restart initiated, otherwise "false"
@@ -396,6 +484,7 @@ export declare class ThemeUtils {
      * @arg {object} context An ES6 class instance with at least one method.
      *
      * @return {object} `context` with `this` bound to it for all of its methods.
+     * @deprecated This method has no usage and will be removed on future versions
      */
     bind_this(context: object): object;
     /**
@@ -410,7 +499,7 @@ export declare class ThemeUtils {
      * @param {boolean}             only_images Include only images in the results. Default `true`.
      * @param {function(string[])}  callback    Callback function to be called with the result.
      */
-    dirlist(path: string, only_images: boolean, callback: (args: string[]) => void): void;
+    dirlist(path: string, only_images: boolean | undefined, callback: (args: string[]) => void): void;
     /**
      * Returns the contents of directory found at `path` provided that the (normalized) `path`
      * meets at least one of the following conditions:
@@ -436,12 +525,14 @@ export declare class ThemeUtils {
      */
     get_current_localized_time(): string;
 }
+export declare const nody_greeter: Nody;
 export declare const lightdm: Greeter;
 export declare const greeter_config: GreeterConfig;
 export declare const theme_utils: ThemeUtils;
 export declare const _ready_event: Event;
 declare global {
     interface Window {
+        nody_greeter: Nody | undefined;
         lightdm: Greeter | undefined;
         greeter_config: GreeterConfig | undefined;
         theme_utils: ThemeUtils | undefined;

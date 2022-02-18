@@ -1,9 +1,9 @@
 {
   "name": "nody-greeter-types",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Nody-Greeter/Web-Greeter typescript types",
   "main": "index.js",
-  "types":"index.d.ts",
+  "types": "index.d.ts",
   "keywords": [
     "nody-greeter",
     "web-greeter",
