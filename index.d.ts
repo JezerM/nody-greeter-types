@@ -65,7 +65,7 @@ export declare class Nody {
 }
 export declare class Signal {
     _name: string;
-    private _callbacks;
+    _callbacks;
     constructor(name: string);
     /**
      * Connects a callback to the signal.
