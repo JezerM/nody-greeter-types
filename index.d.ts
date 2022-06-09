@@ -30,7 +30,7 @@ export interface WindowMetadata {
  * An event that is fired and dispatched when one browser window of a theme
  * sends a broadcast to all windows (which happens for multi-monitor setups)
  */
-export declare class NodyBroadcastEvent extends Event {
+export declare class GreeterBroadcastEvent extends Event {
     /** Metadata for the window that originated the request */
     readonly window: WindowMetadata;
     /** Data sent in the broadcast */
@@ -45,7 +45,7 @@ export declare class NodyBroadcastEvent extends Event {
  * A class that exposes functionality that is unique to `nody-greeter` and not
  * present in `web-greeter`
  */
-export declare class Nody {
+export declare class Comm {
     private _window_metadata;
     /**
      * callback that should be called when the metadata is received
@@ -65,7 +65,7 @@ export declare class Nody {
 }
 export declare class Signal {
     _name: string;
-    _callbacks;
+    _callbacks: ((...args: unknown[]) => void)[];
     constructor(name: string);
     /**
      * Connects a callback to the signal.
@@ -98,7 +98,7 @@ export declare class Greeter {
     /**
      * The username of the user being authenticated or "null"
      * if no authentication is in progress
-     * @type {string|Null}
+     * @type {string|null}
      * @readonly
      */
     get authentication_user(): string | null;
@@ -125,8 +125,15 @@ export declare class Greeter {
      * Gets the battery data.
      * @type {LightDMBattery}
      * @readonly
+     * @deprecated Use `battery_data`
      */
     get batteryData(): LightDMBattery;
+    /**
+     * Gets the battery data.
+     * @type {LightDMBattery}
+     * @readonly
+     */
+    get battery_data(): LightDMBattery;
     /**
      * Gets the brightness
      */
@@ -495,9 +502,9 @@ export declare class ThemeUtils {
      *   * Is located within the greeter's shared data directory (`/var/lib/lightdm-data`).
      *   * Is located in `/tmp`.
      *
-     * @param {string}              path        The abs path to desired directory.
-     * @param {boolean}             only_images Include only images in the results. Default `true`.
-     * @param {function(string[])}  callback    Callback function to be called with the result.
+     * @param path        The abs path to desired directory.
+     * @param only_images Include only images in the results. Default `true`.
+     * @param callback    Callback function to be called with the result.
      */
     dirlist(path: string, only_images: boolean | undefined, callback: (args: string[]) => void): void;
     /**
@@ -508,35 +515,35 @@ export declare class ThemeUtils {
      *   * Is located within the greeter's shared data directory (`/var/lib/lightdm-data`).
      *   * Is located in `/tmp`.
      *
-     * @param {string}              path        The abs path to desired directory.
-     * @param {boolean}             only_images Include only images in the results. Default `true`.
-     * @param {function(string[])}  callback    Callback function to be called with the result.
+     * @param path        The abs path to desired directory.
+     * @param only_images Include only images in the results. Default `true`.
+     * @param callback    Callback function to be called with the result.
      * @experimental Available only for nody-greeter. DO NOT use it if you want compatibility between web-greeter and nody-greeter
      */
     dirlist_sync(path: string, only_images?: boolean): string[];
     /**
      * Get the current date in a localized format. Local language is autodetected by default, but can be set manually in the greeter config file.
-     * 	 * `language` defaults to the system's language, but can be set manually in the config file.
      */
     get_current_localized_date(): string;
     /**
      * Get the current time in a localized format. Local language is autodetected by default, but can be set manually in the greeter config file.
-     * 	 * `language` defaults to the system's language, but can be set manually in the config file.
      */
     get_current_localized_time(): string;
 }
-export declare const nody_greeter: Nody;
+export declare const greeter_comm: Comm;
 export declare const lightdm: Greeter;
 export declare const greeter_config: GreeterConfig;
 export declare const theme_utils: ThemeUtils;
 export declare const _ready_event: Event;
 declare global {
     interface Window {
-        nody_greeter: Nody | undefined;
+        greeter_comm: Comm | undefined;
         lightdm: Greeter | undefined;
         greeter_config: GreeterConfig | undefined;
         theme_utils: ThemeUtils | undefined;
         _ready_event: Event | undefined;
+        addEventListener(type: "GreeterBroadcastEvent", listener: (ev: GreeterBroadcastEvent) => void, options?: boolean | AddEventListenerOptions | undefined): void;
+        addEventListener(type: "GreeterReady", listener: (ev: Event) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     }
 }
 export {
