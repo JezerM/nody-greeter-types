@@ -64,8 +64,8 @@ export declare class Comm {
     broadcast(data: unknown): void;
 }
 export declare class Signal {
-    _name: string;
-    _callbacks: ((...args: unknown[]) => void)[];
+    protected _name: string;
+    protected _callbacks: ((...args: unknown[]) => void)[];
     constructor(name: string);
     /**
      * Connects a callback to the signal.
@@ -77,7 +77,7 @@ export declare class Signal {
      * @param {() => void} callback The callback to disattach.
      */
     disconnect(callback: () => void): void;
-    _emit(...args: unknown[]): void;
+    protected _emit(...args: unknown[]): void;
 }
 export declare class MessageSignal extends Signal {
     connect(callback: (message: string, type: LightDMMessageType) => void): void;
