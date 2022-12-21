@@ -80,10 +80,10 @@ export declare class Signal {
     _emit(...args: unknown[]): void;
 }
 export declare class MessageSignal extends Signal {
-    connect(callback: (message: string, type: number) => void): void;
+    connect(callback: (message: string, type: LightDMMessageType) => void): void;
 }
 export declare class PromptSignal extends Signal {
-    connect(callback: (message: string, type: number) => void): void;
+    connect(callback: (message: string, type: LightDMPromptType) => void): void;
 }
 export declare class Greeter {
     constructor();
@@ -546,6 +546,27 @@ declare global {
         addEventListener(type: "GreeterReady", listener: (ev: Event) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     }
 }
+declare enum LightDMPromptType {
+  /**
+   * The prompt is a question, typically used to prompt for the username.
+   */
+  Question = 0,
+  /**
+   * The prompt is for secret information, typically used to prompt for the password.
+   */
+  Secret = 1,
+}
+
+declare enum LightDMMessageType {
+  /**
+   * An informational message
+   */
+  Info = 0,
+  /**
+   * An error message
+   */
+  Error = 1,
+}
 export {
-  LightDMUser, LightDMLayout, LightDMBattery, LightDMSession, LightDMLanguage
+  LightDMUser, LightDMLayout, LightDMBattery, LightDMSession, LightDMLanguage, LightDMPromptType, LightDMMessageType
 };
